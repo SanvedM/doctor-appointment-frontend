@@ -1,60 +1,106 @@
-const AppointmentCard = ({ appointment }) => {
-  console.log(appointment,"this is appointmentttttttttttttttttttt")
-  return (
-    <div className="bg-white rounded-2xl shadow-lg overflow-hidden border">
+import { CalendarDays, Clock, User, CalendarX } from "lucide-react";
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center bg-blue-50 px-5 py-3">
-        <h3 className="text-lg font-semibold text-blue-700">
-          Appointment
+const AppointmentCard = ({ appointment }) => {
+  // 🔥 EMPTY STATE HANDLER
+  if (!appointment) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+
+        {/* Icon */}
+        <div className="w-24 h-24 rounded-full 
+                        bg-gradient-to-br from-green-100 to-teal-100
+                        flex items-center justify-center mb-6 shadow-sm">
+          <CalendarX className="text-teal-600" size={40} />
+        </div>
+
+        {/* Title */}
+        <h3 className="text-xl font-semibold text-teal-800 mb-2">
+          No Upcoming Appointments
         </h3>
 
+        {/* Subtitle */}
+        <p className="text-gray-500 max-w-sm">
+          You haven't booked any appointments yet.
+        </p>
+      </div>
+    );
+  }
+
+  // ✅ combine date + time
+  const appointmentDateTime = new Date(
+    `${appointment.date}T${appointment.time}`
+  );
+
+  const now = new Date();
+  const isExpired = appointmentDateTime < now;
+  const displayStatus = isExpired ? "Expired" : "Upcoming";
+
+  return (
+    <div className="group bg-white/80 backdrop-blur-md border border-green-100 
+                    rounded-2xl shadow-sm hover:shadow-xl 
+                    transition-all duration-300 hover:-translate-y-1 
+                    p-5">
+
+      {/* TOP ROW */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-teal-700 group-hover:text-teal-800 transition">
+            Dr. {appointment.doctor}
+          </h3>
+
+          <p className="text-sm text-gray-500 mt-1">
+            {appointment.specialty}
+          </p>
+        </div>
+
+        {/* STATUS BADGE */}
         <span
-          className={`px-3 py-1 text-xs rounded-full font-medium ${
-            appointment.status === "Upcoming"
-              ? "bg-green-100 text-green-700"
-              : "bg-gray-200 text-gray-600"
-          }`}
+          className={`px-3 py-1 rounded-full text-xs font-semibold
+            ${
+              isExpired
+                ? "bg-red-100 text-red-700"
+                : "bg-green-100 text-green-700"
+            }`}
         >
-          {appointment.status}
+          {displayStatus}
         </span>
       </div>
 
-      {/* BODY */}
-      <div className="p-5">
+      {/* DIVIDER */}
+      <div className="my-4 h-px bg-gradient-to-r from-transparent via-green-200 to-transparent" />
 
-        {/* Doctor Info */}
-        <h2 className="text-xl font-semibold text-gray-800">
-          Dr. {appointment.doctor}
-        </h2>
-        <p className="text-sm text-gray-500 mb-4">
-          {appointment.specialty}
-        </p>
-
-        {/* Date Time */}
-        <div className="flex gap-10 text-sm text-gray-600 mb-5">
-          <div className="flex items-center gap-2">
-            📅 <span>{appointment.date}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            ⏰ <span>{appointment.time}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            👤  <span>{appointment.customer}</span>
-          </div>
+      {/* DETAILS GRID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+        
+        <div className="flex items-center gap-2 text-gray-600">
+          <CalendarDays size={16} className="text-green-600" />
+          <span>{appointment.date}</span>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-4">
-          <button className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700">
-            Reschedule
-          </button>
-
-          <button className="px-4 py-2 text-sm rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
-            Cancel
-          </button>
+        <div className="flex items-center gap-2 text-gray-600">
+          <Clock size={16} className="text-green-600" />
+          <span>{appointment.time}</span>
         </div>
+
+        {appointment.customer && (
+          <div className="flex items-center gap-2 text-gray-600 sm:col-span-2">
+            <User size={16} className="text-green-600" />
+            <span>{appointment.customer}</span>
+          </div>
+        )}
+      </div>
+
+      {/* ACTION */}
+      <div className="mt-4 flex justify-end">
+        <button
+          className="text-xs font-medium text-green-700 
+                     hover:text-white hover:bg-green-600
+                     border border-green-200 hover:border-green-600
+                     px-3 py-1.5 rounded-lg
+                     transition-all duration-200"
+        >
+          View Details
+        </button>
       </div>
     </div>
   );

@@ -1,122 +1,63 @@
 import { useState } from "react";
-import api from "../api/axios";
 
+const BookAppointmentModal = ({ doctor, onClose, onConfirm }) => {
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
 
+  // ✅ today min date
+  const today = new Date().toISOString().split("T")[0];
 
-const BookAppointmentModal = ({ doctor, onClose }) => {
-  const [form, setForm] = useState({
-    date: "",
-    time: "",
-  });
+  const submit = () => {
+    if (!date || !time) {
+      alert("Please select date and time");
+      return;
+    }
 
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    onConfirm({ doctor, date, time });
+    onClose();
   };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-
-    try {
-
-      const payload = {
-        doctor: doctor.id,                // 👈 doctor ID
-        appointment_date: form.date,
-        appointment_time: form.time
-      };
-
-    await api.post("appointment", payload);
-
-
-
-      alert("Appointment booked successfully!");
-      onClose();
-
-    } catch (err) {
-      alert("Appointment Not Booked");
-      console.log("BACKEND DATA:", err.response?.data);
-
-
-  if (err.response) {
-    console.log("STATUS:", err.response.status);
-    console.log("BACKEND DATA:", err.response.data); // 👈 THIS
-
-    setError(
-      err.response.data.detail ||
-      JSON.stringify(err.response.data)
-    );
-  } else {
-    setError("Server not reachable");
-  }
-}
-
-
-  };
-
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow w-full max-w-md relative">
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-400 hover:text-black"
-        >
-          ✕
-        </button>
-
-        <h2 className="text-xl font-bold mb-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-6 w-96">
+        <h2 className="text-xl font-semibold mb-4">
           Book Appointment
         </h2>
 
-        {/* Doctor (pre-filled & disabled) */}
-        <label className="block mb-2 text-sm font-medium">
-          Doctor
-        </label>
-        <input
-          type="text"
-          name="doctor"
-          value={doctor?.name || doctor?.username || ""}
-          disabled
-          className="w-full mb-4 p-2 border rounded bg-gray-100"
-        />
-
-        {/* Date */}
-        <label className="block mb-2 text-sm font-medium">
-          Select Date
-        </label>
+        {/* DATE */}
+        <label className="text-sm text-gray-600">Select Date</label>
         <input
           type="date"
-          name="date"
-          onChange={handleChange}
-          required
-          className="w-full mb-4 p-2 border rounded"
+          min={today}
+          className="w-full border rounded-xl px-3 py-2 mb-4"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
         />
 
-        {/* Time */}
-        <label className="block mb-2 text-sm font-medium">
-          Select Time
-        </label>
+        {/* TIME */}
+        <label className="text-sm text-gray-600">Select Time</label>
         <input
           type="time"
-          name="time"
-          onChange={handleChange}
-          required
-          className="w-full mb-6 p-2 border rounded"
+          className="w-full border rounded-xl px-3 py-2 mb-4"
+          value={time}
+          onChange={(e) => setTime(e.target.value)}
         />
 
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Confirm Appointment
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={submit}
+            className="flex-1 bg-teal-500 text-white py-2 rounded-xl"
+          >
+            Confirm
+          </button>
+
+          <button
+            onClick={onClose}
+            className="flex-1 border py-2 rounded-xl"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );

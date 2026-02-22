@@ -1,10 +1,8 @@
-import { useContext, useState } from "react";
-import { AuthContext } from "./AuthContext";
-import { useNavigate } from "react-router-dom";
-import doctorImg from "../assets/doc.avif";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../api/axios";
 
 const Login = () => {
-  const { loginUser } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -12,98 +10,84 @@ const Login = () => {
     password: "",
   });
 
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const submit = async (e) => {
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
+    setError("");
 
     try {
-      await loginUser(form.username, form.password);
+      const res = await api.post("/token/", form);
 
-      // ✅ redirect on success
+      localStorage.setItem("token", res.data.access);
+      localStorage.setItem("refresh", res.data.refresh);
+
       navigate("/home");
     } catch (err) {
-      // ❌ interactive error
       setError("Invalid username or password");
+      console.log(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-green-50">
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md"
+      >
+        <h2 className="text-2xl font-bold text-teal-600 mb-6 text-center">
+          Login
+        </h2>
 
-      {/* LEFT IMAGE */}
-      <div
-        className="md:w-1/2 w-full h-64 md:h-auto bg-cover bg-center"
-        style={{ backgroundImage: `url(${doctorImg})` }}
-      />
+        {error && (
+          <p className="text-red-500 text-sm mb-3 text-center">{error}</p>
+        )}
 
-      {/* RIGHT FORM */}
-      <div className="md:w-1/2 w-full flex items-center justify-center bg-white px-6">
-        <form
-          onSubmit={submit}
-          className="w-full max-w-md"
+        <input
+          name="username"
+          placeholder="Username"
+          value={form.username}
+          onChange={handleChange}
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 mb-4"
+          required
+        />
+
+        <input
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={form.password}
+          onChange={handleChange}
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 mb-6"
+          required
+        />
+
+        <button
+          disabled={loading}
+          className="w-full bg-teal-600 text-white py-2 rounded-xl font-semibold hover:bg-teal-700 transition"
         >
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">
-            Login
-          </h2>
+          {loading ? "Logging in..." : "Login"}
+        </button>
 
-          {/* ❌ Error Message */}
-          {error && (
-            <div className="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-2 text-sm">
-              {error}
-            </div>
-          )}
-
-          <input
-            className="w-full mb-4 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Username"
-            onChange={(e) =>
-              setForm({ ...form, username: e.target.value })
-            }
-          />
-
-          <input
-            type="password"
-            className="w-full mb-6 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Password"
-            onChange={(e) =>
-              setForm({ ...form, password: e.target.value })
-            }
-          />
-
-          <button
-            disabled={loading}
-            className="
-              w-full py-3 rounded-lg font-semibold
-              bg-blue-600 text-white
-              hover:bg-blue-700 transition
-              disabled:opacity-50 disabled:cursor-not-allowed
-            "
+        {/* ✅ REGISTER LINK */}
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Don’t have an account?{" "}
+          <Link
+            to="/register"
+            className="text-teal-600 font-semibold hover:underline"
           >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-
-
-<p className="text-sm text-gray-600 mt-3 text-center">
-  Don’t have an account?{" "}
-  <span
-    onClick={() => navigate("/register")}
-    className="text-blue-600 cursor-pointer hover:underline font-medium"
-  >
-    Register Here
-  </span>
-</p>
-
-          <p className="text-sm text-gray-500 mt-4">
-            © 2026 Healthcare System
-          </p>
-        </form>
-      </div>
+            Register
+          </Link>
+        </p>
+      </form>
     </div>
   );
 };

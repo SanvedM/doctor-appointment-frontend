@@ -1,87 +1,101 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../api/axios";
+import { X } from "lucide-react";
+import api from "../api/axios";
 
 const CustomerProfile = ({ onClose }) => {
-  const [profile, setProfile] = useState({});
-  const [edit, setEdit] = useState(false);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // ✅ fetch profile
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get("/my-profile");
+        setProfile(res.data);
+      } catch (err) {
+        console.log("Profile fetch error", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProfile();
   }, []);
 
-  const fetchProfile = async () => {
-    const res = await axiosInstance.get("/profile");
-    setProfile(res.data);
-  };
-
-  const handleChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
-  };
-
-  const updateProfile = async () => {
-    await axiosInstance.patch("profile", profile);
-    alert("Profile Updated");
-    setEdit(false);
+  // ✅ initials helper
+  const getInitials = () => {
+    if (!profile?.first_name) return "U";
+    return profile.first_name.charAt(0).toUpperCase();
   };
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* Click Outside Close */}
-      <div className="absolute inset-0" onClick={onClose}></div>
+    <>
+      {/* BACKDROP */}
+      <div
+        className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-40"
+        onClick={onClose}
+      />
 
-      {/* SMALL TOP RIGHT CARD */}
-      <div className="absolute right-6 top-16 w-[320px] bg-white rounded-xl shadow-2xl p-5">
+      {/* PROFILE PANEL */}
+      <div className="fixed top-20 right-6 z-50 w-80 animate-[fadeIn_.2s_ease-out]">
+        <div className="bg-white/95 backdrop-blur-md border border-green-100 rounded-2xl shadow-xl overflow-hidden">
+          
+          {/* HEADER */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+            <h2 className="font-semibold text-teal-800 text-sm">
+              My Profile
+            </h2>
 
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-gray-700">My Profile</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-black">
-            ✕
-          </button>
-        </div>
+            <button
+              onClick={onClose}
+              className="p-1 rounded-lg hover:bg-gray-100 transition"
+            >
+              <X size={16} className="text-gray-500" />
+            </button>
+          </div>
 
-        {/* Avatar + Name */}
-            <div className="flex flex-col items-center mb-4">
-            <img
-                className="w-12 h-12 rounded-full ring-2 ring-blue-300 object-cover mb-2"
-                src="https://i.pravatar.cc/100"
-                alt="Profile"
-            />
-
-            <p className="text-sm font-semibold">
-                {profile.first_name} {profile.last_name}
-            </p>
-            <p className="text-xs text-gray-500">{profile.email}</p>
+          {/* AVATAR */}
+          <div className="flex flex-col items-center py-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white font-bold text-sm shadow-md">
+              {getInitials()}
             </div>
 
+            <p className="mt-1 font-semibold text-gray-800 text-sm">
+              {loading
+                ? "Loading..."
+                : profile?.first_name || profile?.username || "User"}
+            </p>
+          </div>
 
-        {/* Editable Field */}
-        <input
-          disabled={!edit}
-          name="mobile_no"
-          value={profile.mobile_no || ""}
-          onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded text-sm"
-          placeholder="Mobile"
-        />
+          {/* BODY */}
+          <div className="px-4 pb-3 space-y-2 text-sm">
+            <div className="bg-green-50 rounded-lg p-2.5">
+              <p className="text-[11px] text-gray-500">Email</p>
+              <p className="font-medium text-gray-800 text-sm">
+                {loading ? "..." : profile?.email || "-"}
+              </p>
+            </div>
 
-        {!edit ? (
-          <button
-            onClick={() => setEdit(true)}
-            className="w-full bg-blue-600 text-white py-2 rounded text-sm"
-          >
-            Edit
-          </button>
-        ) : (
-          <button
-            onClick={updateProfile}
-            className="w-full bg-green-600 text-white py-2 rounded text-sm"
-          >
-            Save
-          </button>
-        )}
+            <div className="bg-green-50 rounded-lg p-2.5">
+              <p className="text-[11px] text-gray-500">Phone</p>
+              <p className="font-medium text-gray-800 text-sm">
+                {loading ? "..." : profile?.mobile_no || "-"}
+              </p>
+            </div>
+          </div>
+
+          {/* FOOTER */}
+          <div className="p-3 border-t border-gray-100">
+            <button
+              onClick={onClose}
+              className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white py-2 rounded-xl text-sm font-medium transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

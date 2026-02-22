@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axios";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../api/axios";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -12,107 +12,132 @@ const Register = () => {
     last_name: "",
     email: "",
     mobile_no: "",
-    role: "customer",
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const submit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
+    setSuccess("");
 
     try {
-      await axiosInstance.post("/register-user", form);
-      alert("Registration successful!");
-      navigate("/login");
+      await api.post("/register-user", {
+        ...form,
+        role: "customer", // ✅ always send
+      });
+
+      setSuccess("Registration successful! Please login.");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (err) {
-      alert("Registration failed");
+      console.log(err);
+      setError("Registration failed. Try different username/email.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-green-50">
       <form
-        onSubmit={submit}
-        className="bg-white p-6 rounded-lg shadow w-full max-w-md"
+        onSubmit={handleRegister}
+        className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md"
       >
-        <h2 className="text-2xl font-bold mb-5">Create Account</h2>
+        <h2 className="text-2xl font-bold text-teal-600 mb-6 text-center">
+          Register
+        </h2>
 
-        <input
-          name="username"
-          placeholder="Username"
-          onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded"
-        />
+        {error && (
+          <p className="text-red-500 text-sm mb-3 text-center">{error}</p>
+        )}
+
+        {success && (
+          <p className="text-green-600 text-sm mb-3 text-center">
+            {success}
+          </p>
+        )}
 
         <input
           name="first_name"
           placeholder="First Name"
+          value={form.first_name}
           onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 mb-3"
+          required
         />
 
         <input
           name="last_name"
           placeholder="Last Name"
+          value={form.last_name}
           onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 mb-3"
+          required
+        />
+
+        <input
+          name="username"
+          placeholder="Username"
+          value={form.username}
+          onChange={handleChange}
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 mb-3"
+          required
         />
 
         <input
           name="email"
+          type="email"
           placeholder="Email"
+          value={form.email}
           onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 mb-3"
+          required
         />
 
         <input
           name="mobile_no"
           placeholder="Mobile Number"
+          value={form.mobile_no}
           onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 mb-3"
+          required
         />
 
         <input
-          type="password"
           name="password"
+          type="password"
           placeholder="Password"
+          value={form.password}
           onChange={handleChange}
-          className="w-full mb-3 p-2 border rounded"
+          className="w-full border border-gray-200 rounded-xl px-3 py-2 mb-6"
+          required
         />
-
-        {/* ROLE DROPDOWN */}
-        <label className="text-sm font-medium">Register As</label>
-        <select
-          name="role"
-          onChange={handleChange}
-          className="w-full mb-5 p-2 border rounded bg-white text-gray-700"
-        >
-          <option value="customer">Customer</option>
-          <option value="doctor">Doctor</option>
-        </select>
 
         <button
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          className="w-full bg-teal-600 text-white py-2 rounded-xl font-semibold hover:bg-teal-700 transition"
         >
-          {loading ? "Creating..." : "Register"}
+          {loading ? "Registering..." : "Register"}
         </button>
 
-        <p className="text-sm mt-4 text-center">
-          Already have account?{" "}
-          <span
-            onClick={() => navigate("/login")}
-            className="text-blue-600 cursor-pointer"
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-teal-600 font-semibold hover:underline"
           >
             Login
-          </span>
+          </Link>
         </p>
       </form>
     </div>
