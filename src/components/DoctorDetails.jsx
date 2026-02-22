@@ -18,12 +18,10 @@ const DoctorDetails = ({ doctor, onBack }) => {
         appointment_time: time,
       };
 
-      console.log("BOOK PAYLOAD:", payload);
 
       const response = await api.post("book-appointment", payload);
 
       alert("Appointment booked successfully ✅");
-      console.log(response.data);
     } catch (error) {
       console.error("BOOK ERROR:", error.response?.data || error);
       alert(

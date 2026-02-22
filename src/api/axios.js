@@ -24,7 +24,6 @@ axiosInstance.interceptors.request.use((config) => {
 
   console.log("URL:", url);
   console.log("IS PUBLIC:", isPublic);
-  console.log("TOKEN:", token);
 
   if (token && !isPublic) {
     config.headers.Authorization = `Bearer ${token}`;
